@@ -9,15 +9,15 @@
 
       <div class="form">
         <div class="form-item">
-          <input class="inp" maxlength="11" placeholder="请输入手机号码" type="text">
+          <input class="inp" maxlength="11" placeholder="请输入手机号码" type="text" v-model="mobile">
         </div>
         <div class="form-item">
-          <input class="inp" maxlength="5" placeholder="请输入图形验证码" type="text">
+          <input class="inp" maxlength="5" placeholder="请输入图形验证码" type="text" v-model="picCode">
           <img :src="picUrl" alt="" @click="getImgCode" v-if="picUrl">
         </div>
         <div class="form-item">
-          <input class="inp" placeholder="请输入短信验证码" type="text">
-          <button>获取验证码</button>
+          <input class="inp" placeholder="请输入短信验证码" type="text" v-model="msgCode">
+          <button @click="getCode">{{ totleSecond === second ? '获取短信验证码' : second + '秒后重新获取' }}</button>
         </div>
       </div>
 
@@ -27,17 +27,27 @@
 </template>
 
 <script>
-import { getPicCode } from '@/api/login'
+import { getPicCode, getMsgCode } from '@/api/login'
+import { Toast } from 'vant' // 引入组件要加大括号,且注意按需引入要删掉全局引入的配置代码
+// import '@/utils/vant-ui'
 export default {
   name: 'LoginPage',
   created () {
-    const res = this.getImgCode()
-    console.log(res)
+    this.getImgCode()
+  },
+  destroyed () {
+    clearInterval(this.timer)
   },
   data () {
     return {
-      picUrl: '',
-      picKey: ''
+      picCode: '', // 用户输入的图形验证码
+      picUrl: '', // 请求回来的验证码图片
+      picKey: '', // 验证码对应的key
+      totleSecond: 5,
+      second: 5,
+      timer: null,
+      mobile: '',
+      msgCode: ''// 短信验证码
     }
   },
   methods: {
@@ -45,6 +55,34 @@ export default {
       const { data: { base64, key } } = await getPicCode()// 不要忘了()调用
       this.picUrl = base64
       this.picKey = key
+    },
+    async getCode () {
+      if (!this.validFn()) return
+      if (this.timer !== null) return
+      // 获取短信验证码
+      const res = await getMsgCode(this.picCode, this.picKey, this.mobile)
+      console.log(res)
+      Toast('短信已发送，请注意查收')
+      this.timer = setInterval(() => {
+        this.second--
+        if (this.second <= 0) {
+          clearInterval(this.timer)
+          this.second = this.totleSecond
+          this.timer = null
+        }
+      }, 1000)
+    },
+    // 手机号与图形验证码校验
+    validFn () {
+      if (!/^1[3-9]\d{9}$/.test(this.mobile)) {
+        this.$toast('请输入正确的手机号')
+        return false
+      }
+      if (!/^\w{4}$/.test(this.picCode)) {
+        Toast('请输入正确的图形验证码')
+        return false
+      }
+      return true
     }
   }
 }
