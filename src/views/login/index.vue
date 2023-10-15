@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import request from '@/utils/request'
+import { getPicCode } from '@/api/login'
 export default {
   name: 'LoginPage',
   created () {
@@ -42,7 +42,7 @@ export default {
   },
   methods: {
     async getImgCode () {
-      const { data: { base64, key } } = await request.get('/captcha/image')
+      const { data: { base64, key } } = await getPicCode()// 不要忘了()调用
       this.picUrl = base64
       this.picKey = key
     }
