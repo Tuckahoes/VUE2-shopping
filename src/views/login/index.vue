@@ -13,7 +13,7 @@
         </div>
         <div class="form-item">
           <input class="inp" maxlength="5" placeholder="请输入图形验证码" type="text">
-          <img src="@/assets/code.png" alt="">
+          <img :src="picUrl" alt="" @click="getImgCode" v-if="picUrl">
         </div>
         <div class="form-item">
           <input class="inp" placeholder="请输入短信验证码" type="text">
@@ -27,8 +27,26 @@
 </template>
 
 <script>
+import request from '@/utils/request'
 export default {
-  name: 'LoginPage'
+  name: 'LoginPage',
+  created () {
+    const res = this.getImgCode()
+    console.log(res)
+  },
+  data () {
+    return {
+      picUrl: '',
+      picKey: ''
+    }
+  },
+  methods: {
+    async getImgCode () {
+      const { data: { base64, key } } = await request.get('/captcha/image')
+      this.picUrl = base64
+      this.picKey = key
+    }
+  }
 }
 </script>
 
