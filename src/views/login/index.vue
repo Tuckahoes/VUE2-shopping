@@ -21,15 +21,14 @@
         </div>
       </div>
 
-      <div class="login-btn">登录</div>
+      <div class="login-btn" @click="loginFn">登录</div>
     </div>
   </div>
 </template>
 
 <script>
-import { getPicCode, getMsgCode } from '@/api/login'
-import { Toast } from 'vant' // 引入组件要加大括号,且注意按需引入要删掉全局引入的配置代码
-// import '@/utils/vant-ui'
+import { getPicCode, getMsgCode, login } from '@/api/login'
+import { Toast } from 'vant' // 如果要直接使用Toast，需要再次在组件中导入？
 export default {
   name: 'LoginPage',
   created () {
@@ -46,7 +45,7 @@ export default {
       totleSecond: 5,
       second: 5,
       timer: null,
-      mobile: '',
+      mobile: '', // 手机号
       msgCode: ''// 短信验证码
     }
   },
@@ -83,6 +82,20 @@ export default {
         return false
       }
       return true
+    },
+    // 登录
+    async loginFn () {
+      if (!this.validFn()) {
+        return false
+      }
+      if (!/^\d{6}$/.test(this.msgCode)) {
+        Toast('请检查短信验证码是否正确')
+        return false
+      }
+      const res = await login(this.mobile, this.msgCode)
+      console.log(res)
+      this.$toast('登录成功~')
+      this.$router.push('/')
     }
   }
 }
