@@ -13,6 +13,8 @@ import ProDetail from '@/views/prodetail'
 import Search from '@/views/search'
 import SearchList from '@/views/search/list'
 
+import store from '@/store'
+
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -35,5 +37,19 @@ const router = new VueRouter({
     { path: '/searchlist', component: SearchList }
   ]
 })
-
+const authPage = ['/pay', '/myOrder']
+router.beforeEach((to, from, next) => {
+  if (!authPage.includes(to.path)) {
+    next()
+    return false
+  } else {
+    const token = store.state.user.userInfo.token
+    if (token) {
+      next()
+      return false
+    } else {
+      next('/login')
+    }
+  }
+})
 export default router

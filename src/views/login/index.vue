@@ -42,8 +42,8 @@ export default {
       picCode: '', // 用户输入的图形验证码
       picUrl: '', // 请求回来的验证码图片
       picKey: '', // 验证码对应的key
-      totleSecond: 5,
-      second: 5,
+      totleSecond: 60,
+      second: 60,
       timer: null,
       mobile: '', // 手机号
       msgCode: ''// 短信验证码
@@ -93,6 +93,7 @@ export default {
         return false
       }
       const res = await login(this.mobile, this.msgCode)
+      this.$store.commit('user/setUserInfo', res.data)
       console.log(res)
       this.$toast('登录成功~')
       this.$router.push('/')
