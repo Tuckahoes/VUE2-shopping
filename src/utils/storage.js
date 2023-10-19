@@ -21,7 +21,7 @@ export const getHistory = () => {
   const result = localStorage.getItem(SEARCHHISTORY)
   return result ? JSON.parse(result) : []
 }
-export const setHitory = (newList) => {
+export const setHistory = (newList) => {
   localStorage.setItem(SEARCHHISTORY, JSON.stringify(newList))
 }
 export const removeHistory = () => {

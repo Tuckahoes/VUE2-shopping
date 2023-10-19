@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { getHistory, setHitory, removeHistory } from '@/utils/storage'
+import { getHistory, setHistory, removeHistory } from '@/utils/storage'
 export default {
   name: 'SearchIndex',
   data () {
@@ -37,21 +37,13 @@ export default {
       this.inputKey = ''
       this.historyList = this.historyList.filter(item => item !== key)
       this.historyList.unshift(key)
+      setHistory(this.historyList)
       this.$router.push(`/searchlist?search=${key}`)
     },
     delHistory () {
       this.historyList = []
       removeHistory()
     }
-  },
-  watch: {
-    historyList: {
-      deep: true,
-      handler (newList) {
-        setHitory(newList)
-      }
-    }
-
   }
 }
 </script>
