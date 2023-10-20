@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { Toast } from 'vant'
+import store from '@/store'
 // 创建一个axios实例，对实例进行自定义配置，避免污染axios
 const loginInstance = axios.create({
   baseURL: 'http://cba.itlike.com/public/index.php?s=/api/',
@@ -15,6 +16,12 @@ loginInstance.interceptors.request.use(function (config) {
     forbidClick: true,
     duration: 0
   })
+  // 有token的话一律带上
+  const token = store.state.user.userInfo.token
+  if (token) {
+    config.headers['Access-Token'] = token
+    config.headers.platform = 'H5'
+  }
   return config
 }, function (error) {
   // Do something with request error

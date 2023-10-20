@@ -70,6 +70,7 @@
         <span>首页</span>
       </div>
       <div class="icon-cart">
+        <span v-if="cartTotal > 0" class="num">{{ cartTotal }}</span>
         <van-icon name="shopping-cart-o" />
         <span>购物车</span>
       </div>
@@ -100,7 +101,7 @@
           <CountBox v-model="proCount"></CountBox>
         </div>
         <div class="showbtn" v-if="true">
-          <div class="btn" v-if="mode === 'cart'">加入购物车</div>
+          <div class="btn" v-if="mode === 'cart'" @click="addCart">加入购物车</div>
           <div class="btn now" v-else>立刻购买</div>
         </div>
         <div class="btn-none" v-else>该商品已抢完</div>
@@ -113,6 +114,9 @@
 import { getProDeatil, getProContent } from '@/api/products'
 import defaultAvatar from '@/assets/default-avatar.png'
 import CountBox from '@/components/CountBox.vue'
+import store from '@/store'
+import { Dialog } from 'vant'
+import { addCart } from '@/api/cart'
 export default {
   name: 'ProDetail',
   data () {
@@ -125,7 +129,8 @@ export default {
       defaultAvatar,
       showPannel: false,
       mode: 'cart',
-      proCount: 1
+      proCount: 1,
+      cartTotal: 0 // 购物车总数量
     }
   },
   components: {
@@ -157,6 +162,36 @@ export default {
     buyFn () {
       this.mode = 'buy'
       this.showPannel = true
+    },
+    async addCart () {
+      // 未登录无token时
+      const token = store.state.user.userInfo.token
+      if (!token) {
+        // console.log('弹出提示框')
+        Dialog.confirm({
+          title: '温馨提示',
+          message: '您还未登录，请先登录~',
+          confirmButtonText: '去登录',
+          cancelButtonText: '再逛逛'
+        })
+          .then(() => {
+            // on confirm
+            this.$router.replace({
+              path: '/login',
+              query: {
+                // fullpath:包含查询参数 path:不包含
+                backUrl: this.$route.fullPath
+              }
+            })
+          })
+          .catch(() => {
+            // on cancel
+          })
+        return false
+      }
+      const { data: { cartTotal } } = await addCart(this.goodsId, this.proCount, this.detail.skuList[0].goods_sku_id)
+      this.cartTotal = cartTotal
+      this.$toast('加入购物车成功')
     }
   },
   created () {
@@ -290,6 +325,22 @@ export default {
       font-size: 14px;
       .van-icon {
         font-size: 24px;
+      }
+    }
+    .icon-cart {
+      position: relative;
+      padding: 0 6px;
+      .num {
+        z-index: 999;
+        position: absolute;
+        top: -2px;
+        right: 0;
+        min-width: 16px;
+        padding: 0 4px;
+        color: #fff;
+        text-align: center;
+        background-color: #ee0a24;
+        border-radius: 50%;
       }
     }
     .btn-add,
