@@ -1,17 +1,18 @@
 <template>
   <div class="cart">
     <van-nav-bar title="购物车" fixed />
-    <!-- 购物车开头 -->
-    <div class="cart-title">
+      <div v-if="isLogin && cartList.length > 0">
+        <!-- 购物车开头 -->
+        <div class="cart-title">
       <span class="all">共<i>{{ cartTotal }}</i>件商品</span>
       <span class="edit">
-        <van-icon name="edit" />
+        <van-icon name="edit" @click="isEdit = !isEdit" />
         编辑
       </span>
-    </div>
+        </div>
 
-    <!-- 购物车列表 -->
-    <div class="cart-list">
+        <!-- 购物车列表 -->
+        <div class="cart-list">
       <div class="cart-item" v-for="item in cartList" :key="item.goods_id">
         <van-checkbox :value="item.isChecked" @click="toggleChange(item.goods_id)"></van-checkbox>
         <div class="show">
@@ -21,13 +22,13 @@
           <span class="tit text-ellipsis-2">{{ item.goods.goods_name }}</span>
           <span class="bottom">
             <div class="price">¥ <span>{{ item.goods.goods_price_min }}</span></div>
-            <CountBox :value="item.goods_num"></CountBox>
+            <CountBox :value="item.goods_num" @input="(value) => handelChange(value, item.goods_id, item.goods_sku_id)"></CountBox>
           </span>
         </div>
       </div>
-    </div>
+        </div>
 
-    <div class="footer-fixed">
+        <div class="footer-fixed">
       <div  class="all-check">
         <van-checkbox  icon-size="18" :value="isSelAll" @click="toggleAll"></van-checkbox>
         全选
@@ -38,10 +39,18 @@
           <span>合计：</span>
           <span>¥ <i class="totalPrice">{{ selPrice }}</i></span>
         </div>
-        <div v-if="true" class="goPay" :class="{disabled: selNum === 0}">结算({{ selNum }})</div>
-        <div v-else class="delete" :class="{disabled: selNum === 0}">删除</div>
+        <div v-if="!isEdit" class="goPay" :class="{disabled: selNum === 0}" @click="toOrder">结算({{ selNum }})</div>
+        <div v-else class="delete" :class="{disabled: selNum === 0}" @click="deleteFn">删除</div>
       </div>
-    </div>
+        </div>
+      </div>
+      <div class="empty-cart" v-else>
+        <img src="@/assets/empty.png" alt="">
+        <div class="tips">
+          您的购物车是空的, 快去逛逛吧
+        </div>
+        <div class="btn" @click="$router.push('/')">去逛逛</div>
+      </div>
   </div>
 </template>
 
@@ -54,12 +63,24 @@ export default {
   components: {
     CountBox
   },
+  data () {
+    return {
+      isEdit: false
+    }
+  },
   computed: {
     ...mapState('cart', ['cartList']),
-    ...mapGetters('cart', ['cartTotal', 'selNum', 'selPrice', 'isSelAll'])
+    ...mapGetters('cart', ['cartTotal', 'selList', 'selNum', 'selPrice', 'isSelAll']),
+    isLogin () {
+      return this.$store.state.user.userInfo.token
+    },
+    // 映射出cartIds数组
+    cartIds () {
+      return this.selList.map(item => item.id).join(',')
+    }
   },
   async created () {
-    if (this.$store.state.user.userInfo.token) {
+    if (this.isLogin) {
       this.$store.dispatch('cart/getCartAction')
     }
   },
@@ -69,6 +90,26 @@ export default {
     },
     toggleAll () {
       this.$store.commit('cart/toggleAll', !this.isSelAll)
+    },
+    handelChange (goodsNum, goodsId, goodsSkuId) {
+      const obj = {
+        goodsNum,
+        goodsId,
+        goodsSkuId
+      }
+      this.$store.dispatch('cart/changeCountAction', obj)
+    },
+    deleteFn () {
+      this.$store.dispatch('cart/deleteAction', this.selList)
+    },
+    toOrder () {
+      this.$router.push({
+        path: '/pay',
+        query: {
+          mode: 'cart',
+          cartIds: this.cartIds
+        }
+      })
     }
   }
 }
@@ -208,5 +249,31 @@ export default {
     }
   }
 
+}
+
+.empty-cart {
+  padding: 80px 30px;
+  img {
+    width: 140px;
+    height: 92px;
+    display: block;
+    margin: 0 auto;
+  }
+  .tips {
+    text-align: center;
+    color: #666;
+    margin: 30px;
+  }
+  .btn {
+    width: 110px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    background-color: #fa2c20;
+    border-radius: 16px;
+    color: #fff;
+    display: block;
+    margin: 0 auto;
+  }
 }
 </style>

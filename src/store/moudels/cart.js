@@ -1,4 +1,5 @@
-import { getCartList } from '@/api/cart'
+import { getCartList, updateCart, deleteCart } from '@/api/cart'
+import { Toast } from 'vant'
 export default {
   namespaced: true,
   state () {
@@ -16,6 +17,21 @@ export default {
     },
     toggleAll (state, isCheckedAll) {
       state.cartList.forEach(item => { item.isChecked = isCheckedAll })
+    },
+    // 更新购物车里商品数量
+    changeCount (state, obj) {
+      const { goodsId, goodsNum } = obj
+      const good = state.cartList.find(item => item.goods_id === goodsId)
+      good.goods_num = goodsNum
+    },
+    // 删除本地购物车数据
+    handelDelete (state, cartIds) {
+      // for (const id in cartIds) {
+      //   state.cartList = state.cartList.filter(item => item.id !== id)
+      // }
+      cartIds.forEach(id => {
+        state.cartList = state.cartList.filter(item => item.id !== id)
+      })
     }
   },
   actions: {
@@ -26,6 +42,28 @@ export default {
         item.isChecked = true
       })
       context.commit('setCartList', data.list)
+    },
+    // 更新购物车数据
+    // 1.更新后台数据后重新渲染一次
+    // async changeCountAction (context, obj) {
+    //   await updateCart(obj)
+    //   context.dispatch('getCartAction')
+    // }
+    // 或者将dispatch从context中解构出来 ： ({ dispatch },obj) ---- dispatch('getCartAction)
+
+    // 2.先更新本地数据再更新后台数据
+    async changeCountAction (context, obj) {
+      await updateCart(obj)
+      context.commit('changeCount', obj)
+    },
+
+    // 删除购物车数据
+    async deleteAction (context, arr) {
+      const cartIds = arr.map(item => item.id)
+      context.commit('handelDelete', cartIds)
+      console.log(cartIds)
+      await deleteCart(cartIds)
+      Toast('删除成功')
     }
   },
   getters: {
