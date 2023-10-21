@@ -64,6 +64,10 @@ export default {
       console.log(cartIds)
       await deleteCart(cartIds)
       Toast('删除成功')
+    },
+    // 退出登录时清楚VUEX的内容
+    logout (context) {
+      context.commit('setCartList', [])
     }
   },
   getters: {

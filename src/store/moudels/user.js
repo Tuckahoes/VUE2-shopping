@@ -13,7 +13,10 @@ export default {
     }
   },
   actions: {
-
+    // 退出登录时清楚VUEX的内容
+    logout (context) {
+      context.commit('setUserInfo', {})
+    }
   },
   getters: {
 

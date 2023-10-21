@@ -146,7 +146,8 @@ export default {
       if (this.mode === 'cart') {
         const res = await submitOrder(this.mode, { cartIds: this.cartIds }, this.remark)
         console.log(res)
-      } else {
+      }
+      if (this.mode === 'buyNow') {
         const res = await submitOrder(this.mode, {
           goodsId: this.goodsId,
           goodsNum: this.goodsNum,
