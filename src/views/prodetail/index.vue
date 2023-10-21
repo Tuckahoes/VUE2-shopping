@@ -166,7 +166,7 @@ export default {
       this.showPannel = true
     },
     toOrder () {
-      if (this.loginConfirm()) return false
+      if (!this.loginConfirm()) return false
       this.$router.push({
         path: '/pay',
         query: {
@@ -179,7 +179,7 @@ export default {
     },
     async addCart () {
       // 未登录无token时
-      if (this.loginConfirm()) return false
+      if (!this.loginConfirm()) return false
       const { data: { cartTotal } } = await addCart(this.goodsId, this.proCount, this.detail.skuList[0].goods_sku_id)
       this.cartTotal = cartTotal
       this.$toast('加入购物车成功')

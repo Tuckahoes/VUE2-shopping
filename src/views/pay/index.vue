@@ -84,21 +84,21 @@
 
       <!-- 买家留言 -->
       <div class="buytips">
-        <textarea placeholder="选填：买家留言（50字内）" name="" id="" cols="30" rows="10"></textarea>
+        <textarea v-model="remark" placeholder="选填：买家留言（50字内）" name="" id="" cols="30" rows="10"></textarea>
       </div>
     </div>
 
     <!-- 底部提交 -->
     <div class="footer-fixed">
       <div class="left">实付款：<span>￥{{ order.orderTotalPrice }}</span></div>
-      <div class="tipsbtn">提交订单</div>
+      <div class="tipsbtn" @click="submitTheOrder">提交订单</div>
     </div>
   </div>
 </template>
 
 <script>
 import { getAddressList } from '@/api/address'
-import { getOrder } from '@/api/order'
+import { getOrder, submitOrder } from '@/api/order'
 export default {
   name: 'PayIndex',
   data () {
@@ -106,7 +106,8 @@ export default {
       myAddress: '',
       goodsList: [],
       order: {},
-      personal: {}
+      personal: {},
+      remark: ''
     }
   },
   created () {
@@ -139,6 +140,21 @@ export default {
         this.personal = personal
         this.goodsList = order.goodsList
       }
+    },
+    // 提交订单
+    async submitTheOrder () {
+      if (this.mode === 'cart') {
+        const res = await submitOrder(this.mode, { cartIds: this.cartIds }, this.remark)
+        console.log(res)
+      } else {
+        const res = await submitOrder(this.mode, {
+          goodsId: this.goodsId,
+          goodsNum: this.goodsNum,
+          goodsSkuId: this.goodsSkuId
+        }, this.remark)
+        console.log(res)
+      }
+      this.$router.replace('/myorder')
     }
   },
   computed: {
